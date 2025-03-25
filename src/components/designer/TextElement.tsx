@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { TextElement as TextElementType } from "@/types/designer";
 import DraggableElement from "@/components/ui/DraggableElement";
 import ResizableElement from "@/components/ui/ResizableElement";
 import { useCanvasStore } from "@/lib/canvas-state";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface TextElementProps {
@@ -22,21 +22,15 @@ const TextElement: React.FC<TextElementProps> = ({ element }) => {
     fontStyle,
     textDecoration,
     textAlign,
+    direction,
     locked,
   } = element;
 
   const { selectedElementId, selectElement, updateElement } = useCanvasStore();
   const isSelected = selectedElementId === id;
-  const textRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  // Handle double click to enable text editing
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    if (locked) return;
-    e.stopPropagation();
-    selectElement(id);
-    setIsEditing(true);
-  };
+  const [editText, setEditText] = useState(text);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Handle position change
   const handlePositionChange = (newPosition: { x: number; y: number }) => {
@@ -53,28 +47,56 @@ const TextElement: React.FC<TextElementProps> = ({ element }) => {
     updateElement(id, { position: { ...position, rotation } });
   };
 
-  // Handle text editing completion
-  const handleBlur = () => {
+  // Handle text change
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditText(e.target.value);
+  };
+
+  // Handle text save
+  const handleTextSave = () => {
+    updateElement(id, { text: editText });
     setIsEditing(false);
-    if (textRef.current) {
-      updateElement(id, { text: textRef.current.innerText });
+  };
+
+  // Handle key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTextSave();
+    } else if (e.key === 'Escape') {
+      setEditText(text);
+      setIsEditing(false);
     }
   };
 
-  // Focus the text element when entering edit mode
+  // Focus input when editing starts
   useEffect(() => {
-    if (isEditing && textRef.current) {
-      textRef.current.focus();
-      
-      // Set the cursor at the end of the text
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(textRef.current);
-      range.collapse(false);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
     }
   }, [isEditing]);
+
+  const textStyle = {
+    fontSize: `${fontSize}px`,
+    fontFamily,
+    color,
+    fontWeight,
+    fontStyle,
+    textDecoration,
+    textAlign,
+    direction,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center',
+    padding: '4px',
+    outline: 'none',
+    border: 'none',
+    background: 'transparent',
+    cursor: isEditing ? 'text' : 'move',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+  };
 
   return (
     <DraggableElement
@@ -87,40 +109,27 @@ const TextElement: React.FC<TextElementProps> = ({ element }) => {
       <ResizableElement
         position={position}
         locked={locked}
+        preserveAspectRatio={false}
         onPositionChange={handleSizeChange}
         onRotationChange={handleRotationChange}
       >
-        <div 
-          className={cn(
-            "w-full h-full overflow-hidden outline-none",
-            isEditing ? "cursor-text" : "cursor-move"
-          )}
-          onDoubleClick={handleDoubleClick}
-        >
+        {isEditing ? (
+          <Input
+            ref={inputRef}
+            value={editText}
+            onChange={handleTextChange}
+            onBlur={handleTextSave}
+            onKeyDown={handleKeyPress}
+            style={textStyle}
+          />
+        ) : (
           <div
-            ref={textRef}
-            contentEditable={isEditing}
-            onBlur={handleBlur}
-            style={{
-              width: "100%",
-              height: "100%",
-              fontSize: `${fontSize}px`,
-              fontFamily,
-              color,
-              fontWeight,
-              fontStyle,
-              textDecoration,
-              textAlign,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: textAlign === "center" ? "center" : 
-                              textAlign === "right" ? "flex-end" : "flex-start"
-            }}
-            suppressContentEditableWarning
+            style={textStyle}
+            onDoubleClick={() => setIsEditing(true)}
           >
             {text}
           </div>
-        </div>
+        )}
       </ResizableElement>
     </DraggableElement>
   );

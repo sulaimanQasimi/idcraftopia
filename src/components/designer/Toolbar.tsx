@@ -18,9 +18,12 @@ import {
   RotateCcw,
   MousePointer,
   ImagePlus,
-  Settings
+  Settings,
+  AlignLeft,
+  AlignRight
 } from "lucide-react";
 import BackgroundImageDialog from "./BackgroundImageDialog";
+import ImageUploadDialog from "./ImageUploadDialog";
 
 interface ToolbarProps {
   onExport: () => void;
@@ -37,6 +40,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
     selectedElementId
   } = useCanvasStore();
   const [showBackgroundDialog, setShowBackgroundDialog] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [backgroundSettings, setBackgroundSettings] = useState<{
     opacity: number;
     fit: 'cover' | 'contain' | 'fill';
@@ -62,6 +66,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           fontStyle: "normal",
           textDecoration: "none",
           textAlign: "center",
+          direction: "ltr"
         } as TextElement);
         break;
       case "shape":
@@ -119,24 +124,55 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
   };
 
   const handleAddBackgroundImage = () => {
-    setShowBackgroundDialog(true);
+    setShowUploadDialog(true);
   };
 
   const handleBackgroundSettingsApply = (settings: { opacity: number; fit: 'cover' | 'contain' | 'fill'; blur: number }) => {
     setBackgroundSettings(settings);
+    // Update existing background image if it exists
+    const elements = useCanvasStore.getState().elements;
+    const backgroundImage = elements.find(el => el.type === 'image' && el.locked);
+    if (backgroundImage) {
+      useCanvasStore.getState().updateElement(backgroundImage.id, {
+        style: {
+          opacity: settings.opacity / 100,
+          objectFit: settings.fit,
+          filter: settings.blur > 0 ? `blur(${settings.blur}px)` : 'none'
+        }
+      });
+    }
+  };
+
+  const handleImageUpload = (file: File) => {
+    // In a real app, you would upload the file to your server
+    // For now, we'll use a placeholder
+    const imageUrl = URL.createObjectURL(file);
     addElement({
       type: "image",
       position: { x: 0, y: 0, width: width, height: height, rotation: 0 },
       locked: true,
-      src: "https://placehold.co/150x150",
+      src: imageUrl,
       aspectRatio: width / height,
       alt: "Background image",
       style: {
-        opacity: settings.opacity / 100,
-        objectFit: settings.fit,
-        filter: settings.blur > 0 ? `blur(${settings.blur}px)` : 'none'
+        opacity: backgroundSettings.opacity / 100,
+        objectFit: backgroundSettings.fit,
+        filter: backgroundSettings.blur > 0 ? `blur(${backgroundSettings.blur}px)` : 'none'
       }
     } as ImageElement);
+  };
+
+  const handleToggleTextDirection = () => {
+    const { selectedElementId, elements, updateElement } = useCanvasStore.getState();
+    if (!selectedElementId) return;
+
+    const selectedElement = elements.find(el => el.id === selectedElementId);
+    if (!selectedElement || selectedElement.type !== 'text') return;
+
+    const currentDirection = (selectedElement as TextElement).direction;
+    updateElement(selectedElementId, {
+      direction: currentDirection === 'ltr' ? 'rtl' : 'ltr'
+    });
   };
 
   return (
@@ -165,6 +201,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           icon={<Type size={18} />} 
           label="Text" 
           onClick={() => handleAddElement("text")}
+        />
+        <ToolButton 
+          icon={<AlignLeft size={18} />} 
+          label="Toggle Text Direction" 
+          onClick={handleToggleTextDirection}
         />
         <ToolButton 
           icon={<ImageIcon size={18} />} 
@@ -234,6 +275,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
         isOpen={showBackgroundDialog}
         onClose={() => setShowBackgroundDialog(false)}
         onApply={handleBackgroundSettingsApply}
+      />
+
+      <ImageUploadDialog
+        isOpen={showUploadDialog}
+        onClose={() => setShowUploadDialog(false)}
+        onUpload={handleImageUpload}
       />
     </>
   );

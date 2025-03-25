@@ -14,6 +14,11 @@ export interface BaseElement {
   position: ElementPosition;
   locked: boolean;
   layerIndex: number;
+  style?: {
+    opacity?: number;
+    objectFit?: 'cover' | 'contain' | 'fill';
+    filter?: string;
+  };
 }
 
 export interface TextElement extends BaseElement {
@@ -26,6 +31,7 @@ export interface TextElement extends BaseElement {
   fontStyle: 'normal' | 'italic';
   textDecoration: 'none' | 'underline';
   textAlign: 'left' | 'center' | 'right';
+  direction: 'ltr' | 'rtl';
 }
 
 export interface ImageElement extends BaseElement {

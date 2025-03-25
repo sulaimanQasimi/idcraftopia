@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ImageElement as ImageElementType } from "@/types/designer";
 import DraggableElement from "@/components/ui/DraggableElement";
@@ -11,7 +10,7 @@ interface ImageElementProps {
 }
 
 const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
-  const { id, position, src, aspectRatio, alt, locked } = element;
+  const { id, position, src, aspectRatio, alt, locked, style } = element;
 
   const { selectedElementId, selectElement, updateElement } = useCanvasStore();
   const isSelected = selectedElementId === id;
@@ -51,7 +50,11 @@ const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
             src={src}
             alt={alt}
             className="w-full h-full object-cover"
-            draggable={false}
+            style={{
+              opacity: style?.opacity ?? 1,
+              objectFit: style?.objectFit ?? 'cover',
+              filter: style?.filter ?? 'none'
+            }}
           />
         </div>
       </ResizableElement>
