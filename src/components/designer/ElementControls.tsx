@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, Lock, Unlock, Trash2, Copy,
   ChevronUp, ChevronDown, MoveUp, MoveDown, Barcode
 } from "lucide-react";
+import ImageUploadDialog from "./ImageUploadDialog";
 
 const ElementControls: React.FC = () => {
   const { 
@@ -27,6 +28,7 @@ const ElementControls: React.FC = () => {
     moveElementToBack,
     toggleElementLock
   } = useCanvasStore();
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   if (!selectedElementId) {
     return (
@@ -49,6 +51,16 @@ const ElementControls: React.FC = () => {
 
   const handleRemove = () => {
     removeElement(selectedElementId);
+  };
+
+  const handleImageUpload = (file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    updateElement(selectedElementId, {
+      src: imageUrl,
+      aspectRatio: 1, // You might want to calculate this from the actual image
+      alt: file.name
+    } as Partial<ImageElement>);
+    setShowUploadDialog(false);
   };
 
   const renderTextControls = (element: TextElement) => (
@@ -257,18 +269,64 @@ const ElementControls: React.FC = () => {
   const renderImageControls = (element: ImageElement) => (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Alt Text</Label>
+        <Label>Image</Label>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => setShowUploadDialog(true)}
+          >
+            Replace Image
+          </Button>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Opacity</Label>
         <Input 
-          value={element.alt} 
-          onChange={(e) => updateElement(selectedElementId, { alt: e.target.value })}
-          placeholder="Description of the image"
+          type="range" 
+          min="0" 
+          max="100" 
+          value={element.style?.opacity ? element.style.opacity * 100 : 100}
+          onChange={(e) => updateElement(selectedElementId, {
+            style: { ...element.style, opacity: Number(e.target.value) / 100 }
+          })}
         />
       </div>
       
-      <div className="pt-2">
-        <Button variant="outline" size="sm" className="w-full">
-          Replace Image
-        </Button>
+      <div className="space-y-2">
+        <Label>Fit</Label>
+        <Select 
+          value={element.style?.objectFit || 'cover'}
+          onValueChange={(value) => updateElement(selectedElementId, {
+            style: { ...element.style, objectFit: value as 'cover' | 'contain' | 'fill' }
+          })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cover">Cover</SelectItem>
+            <SelectItem value="contain">Contain</SelectItem>
+            <SelectItem value="fill">Fill</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Blur</Label>
+        <Input 
+          type="range" 
+          min="0" 
+          max="20" 
+          value={element.style?.filter ? parseInt(element.style.filter.match(/\d+/)?.[0] || '0') : 0}
+          onChange={(e) => updateElement(selectedElementId, {
+            style: { 
+              ...element.style, 
+              filter: Number(e.target.value) > 0 ? `blur(${e.target.value}px)` : 'none' 
+            }
+          })}
+        />
       </div>
     </div>
   );
@@ -569,6 +627,12 @@ const ElementControls: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      <ImageUploadDialog 
+        open={showUploadDialog} 
+        onOpenChange={setShowUploadDialog}
+        onUpload={handleImageUpload}
+      />
     </div>
   );
 };

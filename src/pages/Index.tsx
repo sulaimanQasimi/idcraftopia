@@ -1,7 +1,6 @@
-
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -157,6 +156,8 @@ const Index = () => {
               </div>
             </div>
           </ResizablePanel>
+          
+          <ResizableHandle withHandle />
           
           <ResizablePanel defaultSize={20} minSize={15}>
             <Tabs defaultValue="elements" className="h-full flex flex-col">
