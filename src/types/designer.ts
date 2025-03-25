@@ -1,4 +1,4 @@
-export type ElementType = 'text' | 'image' | 'shape' | 'qrcode';
+export type ElementType = 'text' | 'image' | 'shape' | 'qrcode' | 'barcode';
 
 export type ElementPosition = {
   x: number;
@@ -62,7 +62,15 @@ export interface QRCodeElement extends BaseElement {
   foregroundColor: string;
 }
 
-export type DesignerElement = TextElement | ImageElement | ShapeElement | QRCodeElement;
+export interface BarcodeElement extends BaseElement {
+  type: 'barcode';
+  value: string;
+  backgroundColor: string;
+  foregroundColor: string;
+  format: 'code128' | 'code39' | 'ean13' | 'ean8' | 'upc' | 'upce';
+}
+
+export type DesignerElement = TextElement | ImageElement | ShapeElement | QRCodeElement | BarcodeElement;
 
 export interface Template {
   id: string;
@@ -84,7 +92,7 @@ export interface CanvasState {
   };
 }
 
-export type ToolType = 'select' | 'text' | 'image' | 'shape' | 'qrcode';
+export type ToolType = 'select' | 'text' | 'image' | 'shape' | 'qrcode' | 'barcode';
 
 export interface Tool {
   id: ToolType;

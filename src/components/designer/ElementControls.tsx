@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,6 +59,30 @@ const ElementControls: React.FC = () => {
           value={element.text} 
           onChange={(e) => updateElement(selectedElementId, { text: e.target.value })}
         />
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Text Direction</Label>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={element.direction === 'ltr' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => updateElement(selectedElementId, { direction: 'ltr' })}
+            className="flex-1"
+          >
+            <AlignLeft className="h-4 w-4 mr-2" />
+            Left to Right
+          </Button>
+          <Button
+            variant={element.direction === 'rtl' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => updateElement(selectedElementId, { direction: 'rtl' })}
+            className="flex-1"
+          >
+            <AlignRight className="h-4 w-4 mr-2" />
+            Right to Left
+          </Button>
+        </div>
       </div>
       
       <div className="space-y-2">
