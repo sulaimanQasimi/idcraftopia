@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -100,7 +99,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
       type: "image",
       position: { x: width / 2 - 75, y: height / 2 - 75, width: 150, height: 150, rotation: 0 },
       locked: false,
-      src: "https://via.placeholder.com/150",
+      src: "https://placehold.co/150x150",
       aspectRatio: 1,
       alt: "Placeholder image",
     });
