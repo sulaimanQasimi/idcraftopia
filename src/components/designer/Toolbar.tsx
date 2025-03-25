@@ -162,17 +162,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
     } as ImageElement);
   };
 
-  const handleToggleTextDirection = () => {
+  const handleSetTextDirection = (direction: 'ltr' | 'rtl') => {
     const { selectedElementId, elements, updateElement } = useCanvasStore.getState();
     if (!selectedElementId) return;
 
     const selectedElement = elements.find(el => el.id === selectedElementId);
     if (!selectedElement || selectedElement.type !== 'text') return;
 
-    const currentDirection = (selectedElement as TextElement).direction;
     updateElement(selectedElementId, {
-      direction: currentDirection === 'ltr' ? 'rtl' : 'ltr'
-    });
+      direction
+    } as Partial<TextElement>);
   };
 
   return (
@@ -204,8 +203,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
         />
         <ToolButton 
           icon={<AlignLeft size={18} />} 
-          label="Toggle Text Direction" 
-          onClick={handleToggleTextDirection}
+          label="Left to Right" 
+          onClick={() => handleSetTextDirection('ltr')}
+        />
+        <ToolButton 
+          icon={<AlignRight size={18} />} 
+          label="Right to Left" 
+          onClick={() => handleSetTextDirection('rtl')}
         />
         <ToolButton 
           icon={<ImageIcon size={18} />} 
