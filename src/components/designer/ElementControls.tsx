@@ -334,6 +334,26 @@ const ElementControls: React.FC = () => {
       </div>
       
       <div className="space-y-2">
+        <Label>Width (px)</Label>
+        <Input 
+          type="number" 
+          step="0.1"
+          value={element.position.width.toFixed(1)}
+          onChange={(e) => {
+            const newWidth = parseFloat(e.target.value);
+            if (!isNaN(newWidth)) {
+              updateElement(selectedElementId, {
+                position: {
+                  ...element.position,
+                  width: newWidth
+                }
+              });
+            }
+          }}
+        />
+      </div>
+      
+      <div className="space-y-2">
         <Label>Background Color</Label>
         <ColorPicker 
           color={element.backgroundColor} 

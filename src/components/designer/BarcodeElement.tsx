@@ -14,8 +14,8 @@ const BarcodeElement: React.FC<BarcodeElementProps> = ({ element }) => {
       try {
         JsBarcode(barcodeRef.current, element.value, {
           format: element.format,
-          width: element.position.width,
-          height: element.position.height,
+          width: Number(element.position.width.toFixed(4)),
+          height: Number(element.position.height.toFixed(4)),
           displayValue: true,
           backgroundColor: element.backgroundColor,
           lineColor: element.foregroundColor,
@@ -33,8 +33,8 @@ const BarcodeElement: React.FC<BarcodeElementProps> = ({ element }) => {
         position: 'absolute',
         left: element.position.x,
         top: element.position.y,
-        width: element.position.width,
-        height: element.position.height,
+        width: `${element.position.width.toFixed(4)}px`,
+        height: `${element.position.height.toFixed(4)}px`,
         transform: `rotate(${element.position.rotation}deg)`,
         ...element.style
       }}
