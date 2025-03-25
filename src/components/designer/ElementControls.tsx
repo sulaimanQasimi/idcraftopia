@@ -7,11 +7,11 @@ import { Toggle } from "@/components/ui/toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ColorPicker from "@/components/ui/ColorPicker";
 import { useCanvasStore } from "@/lib/canvas-state";
-import { DesignerElement, TextElement, ShapeElement, ImageElement, QRCodeElement } from "@/types/designer";
+import { DesignerElement, TextElement, ShapeElement, ImageElement, QRCodeElement, BarcodeElement } from "@/types/designer";
 import { 
   Type, ImageIcon, Circle, Square, QrCode, Bold, Italic, Underline, 
   AlignLeft, AlignCenter, AlignRight, Lock, Unlock, Trash2, Copy,
-  ChevronUp, ChevronDown, MoveUp, MoveDown
+  ChevronUp, ChevronDown, MoveUp, MoveDown, Barcode
 } from "lucide-react";
 
 const ElementControls: React.FC = () => {
@@ -302,6 +302,55 @@ const ElementControls: React.FC = () => {
     </div>
   );
 
+  const renderBarcodeControls = (element: BarcodeElement) => (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label>Barcode Content</Label>
+        <Input 
+          value={element.value} 
+          onChange={(e) => updateElement(selectedElementId, { value: e.target.value })}
+          placeholder="Enter barcode value"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Barcode Format</Label>
+        <Select 
+          value={element.format}
+          onValueChange={(value) => updateElement(selectedElementId, { format: value as BarcodeElement['format'] })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="code128">Code 128</SelectItem>
+            <SelectItem value="code39">Code 39</SelectItem>
+            <SelectItem value="ean13">EAN-13</SelectItem>
+            <SelectItem value="ean8">EAN-8</SelectItem>
+            <SelectItem value="upc">UPC</SelectItem>
+            <SelectItem value="upce">UPC-E</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Background Color</Label>
+        <ColorPicker 
+          color={element.backgroundColor} 
+          onChange={(color) => updateElement(selectedElementId, { backgroundColor: color })}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Foreground Color</Label>
+        <ColorPicker 
+          color={element.foregroundColor} 
+          onChange={(color) => updateElement(selectedElementId, { foregroundColor: color })}
+        />
+      </div>
+    </div>
+  );
+
   const renderElementControls = () => {
     switch (selectedElement.type) {
       case 'text':
@@ -312,6 +361,8 @@ const ElementControls: React.FC = () => {
         return renderImageControls(selectedElement as ImageElement);
       case 'qrcode':
         return renderQRCodeControls(selectedElement as QRCodeElement);
+      case 'barcode':
+        return renderBarcodeControls(selectedElement as BarcodeElement);
       default:
         return null;
     }
@@ -329,6 +380,8 @@ const ElementControls: React.FC = () => {
           : <Square className="h-4 w-4" />;
       case 'qrcode':
         return <QrCode className="h-4 w-4" />;
+      case 'barcode':
+        return <Barcode className="h-4 w-4" />;
       default:
         return null;
     }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { useCanvasStore } from "@/lib/canvas-state";
-import { ToolType, ImageElement, TextElement, ShapeElement, QRCodeElement } from "@/types/designer";
+import { ToolType, ImageElement, TextElement, ShapeElement, QRCodeElement, BarcodeElement } from "@/types/designer";
 import { toast } from "sonner";
 import { 
   Type, 
@@ -20,7 +20,8 @@ import {
   ImagePlus,
   Settings,
   AlignLeft,
-  AlignRight
+  AlignRight,
+  Barcode
 } from "lucide-react";
 import BackgroundImageDialog from "./BackgroundImageDialog";
 import ImageUploadDialog from "./ImageUploadDialog";
@@ -90,6 +91,17 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           backgroundColor: "#FFFFFF",
           foregroundColor: "#000000",
         } as QRCodeElement);
+        break;
+      case "barcode":
+        addElement({
+          type: "barcode",
+          position: { x: width / 2 - 100, y: height / 2 - 50, width: 200, height: 100, rotation: 0 },
+          locked: false,
+          value: "123456789",
+          format: "code128",
+          backgroundColor: "#FFFFFF",
+          foregroundColor: "#000000",
+        } as BarcodeElement);
         break;
       default:
         break;
@@ -230,6 +242,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           icon={<QrCode size={18} />} 
           label="QR Code" 
           onClick={() => handleAddElement("qrcode")}
+        />
+        <ToolButton 
+          icon={<Barcode size={18} />} 
+          label="Barcode" 
+          onClick={() => handleAddElement("barcode")}
         />
         
         <Separator orientation="vertical" className="h-8 mx-1" />

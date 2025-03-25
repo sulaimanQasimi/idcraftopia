@@ -1,10 +1,10 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useCanvasStore } from "@/lib/canvas-state";
 import TextElement from "./TextElement";
 import ShapeElement from "./ShapeElement";
 import ImageElement from "./ImageElement";
 import QRCodeElement from "./QRCodeElement";
+import BarcodeElement from "./BarcodeElement";
 import { DesignerElement } from "@/types/designer";
 import { toast } from "sonner";
 
@@ -102,6 +102,8 @@ const Canvas: React.FC<CanvasProps> = ({ className }) => {
         return <ImageElement key={element.id} element={element} />;
       case "qrcode":
         return <QRCodeElement key={element.id} element={element} />;
+      case "barcode":
+        return <BarcodeElement key={element.id} element={element} />;
       default:
         return null;
     }

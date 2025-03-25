@@ -28,15 +28,25 @@ const BarcodeElement: React.FC<BarcodeElementProps> = ({ element }) => {
   }, [element.value, element.format, element.position.width, element.position.height, element.backgroundColor, element.foregroundColor]);
 
   return (
-    <svg
-      ref={barcodeRef}
+    <div
       style={{
-        width: '100%',
-        height: '100%',
+        position: 'absolute',
+        left: element.position.x,
+        top: element.position.y,
+        width: element.position.width,
+        height: element.position.height,
         transform: `rotate(${element.position.rotation}deg)`,
         ...element.style
       }}
-    />
+    >
+      <svg
+        ref={barcodeRef}
+        style={{
+          width: '100%',
+          height: '100%',
+        }}
+      />
+    </div>
   );
 };
 
