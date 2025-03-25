@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { useCanvasStore } from "@/lib/canvas-state";
-import { ToolType } from "@/types/designer";
+import { ToolType, ImageElement, TextElement, ShapeElement, QRCodeElement } from "@/types/designer";
 import { toast } from "sonner";
 import { 
   Type, 
@@ -16,8 +16,11 @@ import {
   Download, 
   Trash,
   RotateCcw,
-  MousePointer
+  MousePointer,
+  ImagePlus,
+  Settings
 } from "lucide-react";
+import BackgroundImageDialog from "./BackgroundImageDialog";
 
 interface ToolbarProps {
   onExport: () => void;
@@ -33,6 +36,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
     height,
     selectedElementId
   } = useCanvasStore();
+  const [showBackgroundDialog, setShowBackgroundDialog] = useState(false);
+  const [backgroundSettings, setBackgroundSettings] = useState<{
+    opacity: number;
+    fit: 'cover' | 'contain' | 'fill';
+    blur: number;
+  }>({
+    opacity: 100,
+    fit: 'cover',
+    blur: 0
+  });
 
   const handleAddElement = (type: ToolType) => {
     switch (type) {
@@ -49,7 +62,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           fontStyle: "normal",
           textDecoration: "none",
           textAlign: "center",
-        });
+        } as TextElement);
         break;
       case "shape":
         addElement({
@@ -61,7 +74,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           borderColor: "#339af0",
           borderWidth: 2,
           borderRadius: 4,
-        });
+        } as ShapeElement);
         break;
       case "qrcode":
         addElement({
@@ -71,7 +84,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
           value: "https://example.com",
           backgroundColor: "#FFFFFF",
           foregroundColor: "#000000",
-        });
+        } as QRCodeElement);
         break;
       default:
         break;
@@ -88,7 +101,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
       borderColor: "#FA5252",
       borderWidth: 2,
       borderRadius: 0,
-    });
+    } as ShapeElement);
   };
 
   const handleAddImage = () => {
@@ -102,88 +115,127 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
       src: "https://placehold.co/150x150",
       aspectRatio: 1,
       alt: "Placeholder image",
-    });
+    } as ImageElement);
+  };
+
+  const handleAddBackgroundImage = () => {
+    setShowBackgroundDialog(true);
+  };
+
+  const handleBackgroundSettingsApply = (settings: { opacity: number; fit: 'cover' | 'contain' | 'fill'; blur: number }) => {
+    setBackgroundSettings(settings);
+    addElement({
+      type: "image",
+      position: { x: 0, y: 0, width: width, height: height, rotation: 0 },
+      locked: true,
+      src: "https://placehold.co/150x150",
+      aspectRatio: width / height,
+      alt: "Background image",
+      style: {
+        opacity: settings.opacity / 100,
+        objectFit: settings.fit,
+        filter: settings.blur > 0 ? `blur(${settings.blur}px)` : 'none'
+      }
+    } as ImageElement);
   };
 
   return (
-    <div className="glass-panel p-2 rounded-lg flex items-center space-x-1">
-      <ToolButton 
-        icon={<MousePointer size={18} />} 
-        label="Select" 
-        selected={!!selectedElementId}
-        onClick={() => {}}
+    <>
+      <div className="glass-panel p-2 rounded-lg flex items-center space-x-1">
+        <ToolButton 
+          icon={<MousePointer size={18} />} 
+          label="Select" 
+          selected={!!selectedElementId}
+          onClick={() => {}}
+        />
+        
+        <Separator orientation="vertical" className="h-8 mx-1" />
+        
+        <ToolButton 
+          icon={<ImagePlus size={18} />} 
+          label="Background" 
+          onClick={handleAddBackgroundImage}
+        />
+        <ToolButton 
+          icon={<Settings size={18} />} 
+          label="Background Settings" 
+          onClick={() => setShowBackgroundDialog(true)}
+        />
+        <ToolButton 
+          icon={<Type size={18} />} 
+          label="Text" 
+          onClick={() => handleAddElement("text")}
+        />
+        <ToolButton 
+          icon={<ImageIcon size={18} />} 
+          label="Image" 
+          onClick={handleAddImage}
+        />
+        <ToolButton 
+          icon={<Square size={18} />} 
+          label="Rectangle" 
+          onClick={() => handleAddElement("shape")}
+        />
+        <ToolButton 
+          icon={<Circle size={18} />} 
+          label="Circle" 
+          onClick={handleAddCircle}
+        />
+        <ToolButton 
+          icon={<QrCode size={18} />} 
+          label="QR Code" 
+          onClick={() => handleAddElement("qrcode")}
+        />
+        
+        <Separator orientation="vertical" className="h-8 mx-1" />
+        
+        <ToolButton 
+          icon={<Undo2 size={18} />} 
+          label="Undo" 
+          onClick={undo}
+        />
+        <ToolButton 
+          icon={<Redo2 size={18} />} 
+          label="Redo" 
+          onClick={redo}
+        />
+        
+        <Separator orientation="vertical" className="h-8 mx-1" />
+        
+        <ToolButton 
+          icon={<Download size={18} />} 
+          label="Export" 
+          onClick={onExport}
+        />
+        <ToolButton 
+          icon={<Trash size={18} />} 
+          label="Clear" 
+          onClick={() => {
+            if (confirm("Are you sure you want to clear the canvas? This action cannot be undone.")) {
+              clearCanvas();
+            }
+          }}
+        />
+        <ToolButton 
+          icon={<RotateCcw size={18} />} 
+          label="Reset View" 
+          onClick={() => {
+            // This will be handled by the Canvas component
+            document.dispatchEvent(new KeyboardEvent('keydown', {
+              key: '0',
+              ctrlKey: true,
+              bubbles: true
+            }));
+          }}
+        />
+      </div>
+
+      <BackgroundImageDialog
+        isOpen={showBackgroundDialog}
+        onClose={() => setShowBackgroundDialog(false)}
+        onApply={handleBackgroundSettingsApply}
       />
-      
-      <Separator orientation="vertical" className="h-8 mx-1" />
-      
-      <ToolButton 
-        icon={<Type size={18} />} 
-        label="Text" 
-        onClick={() => handleAddElement("text")}
-      />
-      <ToolButton 
-        icon={<ImageIcon size={18} />} 
-        label="Image" 
-        onClick={handleAddImage}
-      />
-      <ToolButton 
-        icon={<Square size={18} />} 
-        label="Rectangle" 
-        onClick={() => handleAddElement("shape")}
-      />
-      <ToolButton 
-        icon={<Circle size={18} />} 
-        label="Circle" 
-        onClick={handleAddCircle}
-      />
-      <ToolButton 
-        icon={<QrCode size={18} />} 
-        label="QR Code" 
-        onClick={() => handleAddElement("qrcode")}
-      />
-      
-      <Separator orientation="vertical" className="h-8 mx-1" />
-      
-      <ToolButton 
-        icon={<Undo2 size={18} />} 
-        label="Undo" 
-        onClick={undo}
-      />
-      <ToolButton 
-        icon={<Redo2 size={18} />} 
-        label="Redo" 
-        onClick={redo}
-      />
-      
-      <Separator orientation="vertical" className="h-8 mx-1" />
-      
-      <ToolButton 
-        icon={<Download size={18} />} 
-        label="Export" 
-        onClick={onExport}
-      />
-      <ToolButton 
-        icon={<Trash size={18} />} 
-        label="Clear" 
-        onClick={() => {
-          if (confirm("Are you sure you want to clear the canvas? This action cannot be undone.")) {
-            clearCanvas();
-          }
-        }}
-      />
-      <ToolButton 
-        icon={<RotateCcw size={18} />} 
-        label="Reset View" 
-        onClick={() => {
-          // This will be handled by the Canvas component
-          document.dispatchEvent(new KeyboardEvent('keydown', {
-            key: '0',
-            ctrlKey: true,
-            bubbles: true
-          }));
-        }}
-      />
-    </div>
+    </>
   );
 };
 

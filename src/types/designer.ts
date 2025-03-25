@@ -1,4 +1,3 @@
-
 export type ElementType = 'text' | 'image' | 'shape' | 'qrcode';
 
 export type ElementPosition = {
@@ -34,6 +33,11 @@ export interface ImageElement extends BaseElement {
   src: string;
   aspectRatio: number;
   alt: string;
+  style?: {
+    opacity?: number;
+    objectFit?: 'cover' | 'contain' | 'fill';
+    filter?: string;
+  };
 }
 
 export interface ShapeElement extends BaseElement {
