@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger,
+  TooltipProvider 
+} from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { useCanvasStore } from "@/lib/canvas-state";
 import { ToolType, ImageElement, TextElement, ShapeElement, QRCodeElement, BarcodeElement } from "@/types/designer";
@@ -196,7 +201,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
 
   return (
     <>
-      <div className="glass-panel p-2 rounded-lg flex items-center space-x-1">
+      <div className="glass-panel p-2 rounded-lg flex items-center space-x-1 relative">
         <ToolButton 
           icon={<MousePointer size={18} />} 
           label="Select" 
@@ -317,6 +322,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
         </TooltipProvider>
       </div>
 
+      {showTextTemplates && (
+        <div className="fixed top-20 right-4 w-64 bg-background border rounded-lg shadow-lg z-[9999]">
+          <TextTemplates />
+        </div>
+      )}
+
       <BackgroundImageDialog
         isOpen={showBackgroundDialog}
         onClose={() => setShowBackgroundDialog(false)}
@@ -328,12 +339,6 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
         onClose={() => setShowUploadDialog(false)}
         onUpload={handleImageUpload}
       />
-
-      {showTextTemplates && (
-        <div className="absolute top-full left-0 mt-2 bg-background border rounded-lg shadow-lg z-50">
-          <TextTemplates />
-        </div>
-      )}
     </>
   );
 };
