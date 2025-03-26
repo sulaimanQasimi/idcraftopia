@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +43,9 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
 
   // Effect to handle mousemove/touchmove events on the window
   useEffect(() => {
+    let rafId: number;
     const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-      if (!isDragging || locked) return;
+      if (!isDragging || locked || !elementRef.current) return;
 
       let clientX: number;
       let clientY: number;
@@ -59,55 +59,72 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
         clientY = e.touches[0].clientY;
       }
 
-      const newX = clientX - offsetRef.current.x;
-      const newY = clientY - offsetRef.current.y;
+      // Cancel any pending animation frame
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
 
-      // Get the parent canvas dimensions
-      const parent = elementRef.current?.parentElement;
-      if (parent) {
-        const parentRect = parent.getBoundingClientRect();
-        // Ensure the element stays within the canvas boundaries
-        const elementRect = elementRef.current?.getBoundingClientRect();
-        if (elementRect) {
+      // Schedule the position update
+      rafId = requestAnimationFrame(() => {
+        if (!elementRef.current) return;
+
+        const rect = elementRef.current.getBoundingClientRect();
+        const newX = position.x + (clientX - (rect.left + offsetRef.current.x));
+        const newY = position.y + (clientY - (rect.top + offsetRef.current.y));
+
+        // Get the parent canvas dimensions
+        const parent = elementRef.current.parentElement;
+        if (parent) {
+          const parentRect = parent.getBoundingClientRect();
+          const elementRect = elementRef.current.getBoundingClientRect();
           const elementWidth = elementRect.width;
           const elementHeight = elementRect.height;
-          
+
           // Calculate bounds
           const minX = 0;
           const minY = 0;
           const maxX = parentRect.width - elementWidth;
           const maxY = parentRect.height - elementHeight;
-          
-          // Apply bounds
+
+          // Apply bounds with smooth transition
           const boundedX = Math.max(minX, Math.min(maxX, newX));
           const boundedY = Math.max(minY, Math.min(maxY, newY));
-          
+
           onPositionChange({ x: boundedX, y: boundedY });
         }
-      }
+      });
     };
 
     if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("touchmove", handleMouseMove);
-    }
+      window.addEventListener("mousemove", handleMouseMove, { passive: true });
+      window.addEventListener("touchmove", handleMouseMove, { passive: false });
 
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("touchmove", handleMouseMove);
-    };
+      return () => {
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+        }
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("touchmove", handleMouseMove);
+      };
+    }
   }, [isDragging, locked, onPositionChange]);
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+  const handleMouseDown = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  ) => {
     if (locked) return;
-    
+
+    if ("touches" in e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     onSelect();
 
     let clientX: number;
     let clientY: number;
 
     if ("touches" in e) {
-      e.preventDefault();
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     } else {
@@ -117,13 +134,16 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
 
     if (elementRef.current) {
       const rect = elementRef.current.getBoundingClientRect();
+
       offsetRef.current = {
         x: clientX - rect.left,
         y: clientY - rect.top,
       };
-    }
 
-    setIsDragging(true);
+      requestAnimationFrame(() => {
+        setIsDragging(true);
+      });
+    }
   };
 
   return (
@@ -137,7 +157,15 @@ const DraggableElement: React.FC<DraggableElementProps> = ({
         className
       )}
       style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        willChange: isDragging ? "transform" : "auto",
+        transition: isDragging
+          ? "none"
+          : "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        touchAction: "none",
+        userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+        WebkitTouchCallout: "none",
       }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleMouseDown}
