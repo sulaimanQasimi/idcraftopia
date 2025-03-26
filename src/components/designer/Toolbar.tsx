@@ -21,10 +21,17 @@ import {
   Settings,
   AlignLeft,
   AlignRight,
-  Barcode
+  Barcode,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Shapes,
+  FileText
 } from "lucide-react";
 import BackgroundImageDialog from "./BackgroundImageDialog";
 import ImageUploadDialog from "./ImageUploadDialog";
+import TextTemplates from "./TextTemplates";
 
 interface ToolbarProps {
   onExport: () => void;
@@ -51,6 +58,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
     fit: 'cover',
     blur: 0
   });
+  const [showTextTemplates, setShowTextTemplates] = useState(false);
 
   const handleAddElement = (type: ToolType) => {
     switch (type) {
@@ -290,6 +298,23 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
             }));
           }}
         />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTextTemplates(!showTextTemplates)}
+                className={showTextTemplates ? "bg-accent" : ""}
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Text Templates</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <BackgroundImageDialog
@@ -303,6 +328,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ onExport }) => {
         onClose={() => setShowUploadDialog(false)}
         onUpload={handleImageUpload}
       />
+
+      {showTextTemplates && (
+        <div className="absolute top-full left-0 mt-2 bg-background border rounded-lg shadow-lg z-50">
+          <TextTemplates />
+        </div>
+      )}
     </>
   );
 };
