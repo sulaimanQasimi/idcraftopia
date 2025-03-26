@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-
 interface ResizableElementProps {
   children: React.ReactNode;
   position: {
