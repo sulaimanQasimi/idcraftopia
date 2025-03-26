@@ -629,8 +629,8 @@ const ElementControls: React.FC = () => {
       </Tabs>
       
       <ImageUploadDialog 
-        open={showUploadDialog} 
-        onOpenChange={setShowUploadDialog}
+        isOpen={showUploadDialog} 
+        onClose={() => setShowUploadDialog(false)}
         onUpload={handleImageUpload}
       />
     </div>
