@@ -10,7 +10,7 @@ interface ImageElementProps {
 }
 
 const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
-  const { id, position, src, aspectRatio, alt, locked, style } = element;
+  const { id, position, src, alt, locked, style } = element;
 
   const { selectedElementId, selectElement, updateElement } = useCanvasStore();
   const isSelected = selectedElementId === id;
@@ -22,7 +22,13 @@ const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
 
   // Handle size change
   const handleSizeChange = (newSize: { width: number; height: number }) => {
-    updateElement(id, { position: { ...position, ...newSize } });
+    updateElement(id, { 
+      position: { 
+        ...position, 
+        width: newSize.width,
+        height: newSize.height
+      } 
+    });
   };
 
   // Handle rotation change
@@ -41,7 +47,7 @@ const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
       <ResizableElement
         position={position}
         locked={locked}
-        preserveAspectRatio={true}
+        preserveAspectRatio={false}
         onPositionChange={handleSizeChange}
         onRotationChange={handleRotationChange}
       >
@@ -49,7 +55,7 @@ const ImageElement: React.FC<ImageElementProps> = ({ element }) => {
           <img
             src={src}
             alt={alt}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
             style={{
               opacity: style?.opacity ?? 1,
               objectFit: style?.objectFit ?? 'cover',
